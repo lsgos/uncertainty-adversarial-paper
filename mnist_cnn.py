@@ -3,6 +3,11 @@
 Gets to 99.25% test accuracy after 12 epochs
 (there is still a lot of margin for parameter tuning).
 16 seconds per epoch on a GRID K520 GPU.
+
+
+Note that this file is based on the KERAS mnist example
+https://github.com/keras-team/keras/blob/master/examples/mnist_cnn.py
+which is also MIT licensed. THere are only minor changes
 '''
 
 from __future__ import print_function
@@ -52,10 +57,10 @@ model.add(Conv2D(32, kernel_size=(3, 3),
                  input_shape=input_shape))
 model.add(Conv2D(64, (3, 3), activation='relu'))
 model.add(MaxPooling2D(pool_size=(2, 2)))
-#model.add(Dropout(0.25))
+model.add(Dropout(0.25))
 model.add(Flatten())
 model.add(Dense(128, activation='relu'))
-#model.add(Dropout(0.5))
+model.add(Dropout(0.5))
 model.add(Dense(num_classes, activation='softmax'))
 
 model.compile(loss=keras.losses.categorical_crossentropy,
@@ -70,5 +75,5 @@ model.fit(x_train, y_train,
 score = model.evaluate(x_test, y_test, verbose=0)
 print('Test loss:', score[0])
 print('Test accuracy:', score[1])
-fname = U.gen_save_name('save/mnist_cnn_no_drop_run.h5')
+fname = U.gen_save_name('save/mnist_cnn_run.h5')
 model.save(fname)
