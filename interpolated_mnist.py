@@ -1,19 +1,8 @@
-import os
-
-import keras
 import numpy as np
-from keras import backend as K
 from matplotlib import pyplot as plt
 from matplotlib import gridspec
-from scipy.stats import norm
 
 import src.utilities as U
-from cleverhans import attacks
-from cleverhans.model import CallableModelWrapper
-from load_dropout_model import load_drop_model
-from train_cdropout_3s_7s import define_cdropout_3s_7s, mnist_to_3s_and_7s
-from train_mnist_vae import define_VAE
-from keras.models import load_model
 
 from latent_plots import get_models, visualise_latent_space
 
@@ -68,6 +57,6 @@ if __name__ == '__main__':
     ax3.plot(x_bald, label='Image Space', c = 'b')
     ax3.legend()
 
-    plt.savefig('overleaf-paper/figures/bald_interpolation.png')
+    plt.savefig('my-figure.png')
     plt.show()
 

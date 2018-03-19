@@ -1,12 +1,10 @@
 
 import keras
-import numpy as np
 from keras import backend as K
 from keras.layers import Dense, Flatten, Lambda, Reshape
 from keras.models import Model
 
 import src.utilities as U
-from train_cdropout_3s_7s import mnist_to_3s_and_7s
 
 BATCH_SIZE=128
 
@@ -51,37 +49,18 @@ def define_VAE(optim='adagrad', latent_dim=2):
     return VAE, encoder, decoder
 
 if __name__ == '__main__':
-    use_3s_7s = False
-    if use_3s_7s: 
-        x_train, y_train, x_test, y_test = mnist_to_3s_and_7s(U.get_mnist())
+    latent_dim = 2
+    x_train, y_train, x_test, y_test = U.get_mnist()
 
-        VAE, encoder, decoder = define_VAE(
-            optim=keras.optimizers.Adam(),
-        )
+    VAE, encoder, decoder = define_VAE(
+        optim=keras.optimizers.Adam(),
+        latent_dim=latent_dim,
+    )
 
-        VAE.fit(x_train, x_train,
-                epochs=50,
-                batch_size=BATCH_SIZE,
-                validation_data=(x_test,x_test))
+    VAE.fit(x_train, x_train,
+            epochs=50,
+            batch_size=BATCH_SIZE,
+            validation_data=(x_test,x_test))
 
-        encoder.save_weights('save/enc_weights_3s_7s.h5')
-        decoder.save_weights('save/dec_weights_3s_7s.h5')
-
-    else:
-        latent_dim = 64
-        x_train, y_train, x_test, y_test = U.get_mnist()
-
-        VAE, encoder, decoder = define_VAE(
-            optim=keras.optimizers.Adam(),
-            latent_dim=latent_dim,
-        )
-
-        VAE.fit(x_train, x_train,
-                epochs=50,
-                batch_size=BATCH_SIZE,
-                validation_data=(x_test,x_test))
-
-        encoder.save_weights('save/enc_weights_latent_dim_' + str(latent_dim) + '.h5')
-        decoder.save_weights('save/dec_weights_latent_dim_' + str(latent_dim) + '.h5')
-
-       
+    encoder.save_weights('save/enc_weights_latent_dim_' + str(latent_dim) + '.h5')
+    decoder.save_weights('save/dec_weights_latent_dim_' + str(latent_dim) + '.h5')

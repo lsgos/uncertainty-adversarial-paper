@@ -11,12 +11,7 @@ from matplotlib import gridspec
 from scipy.stats import norm
 
 import src.utilities as U
-import src.mcmc as mcmc
 
-from cleverhans import attacks
-from cleverhans.model import CallableModelWrapper
-from load_dropout_model import load_drop_model
-from train_cdropout_3s_7s import define_cdropout_3s_7s, mnist_to_3s_and_7s
 from train_mnist_vae import define_VAE
 plt.rcParams['figure.figsize'] = 8, 8
 #use true type fonts only
@@ -54,78 +49,9 @@ def get_uncertainty_samples(mc_model,encoder, decoder, extent, n_grid=100):
     X = decoder.predict(Z) #produce corresponding images for the latent space grid
     preds,entropy, bald = mc_model.get_results(X)
     return preds, entropy.reshape(xx.shape), bald.reshape(xx.shape) 
-def get_HMC_models():
-    _, encoder, decoder = define_VAE()
-    encoder.load_weights('save/enc_weights.h5')
-    decoder.load_weights('save/dec_weights.h5')
-
-    input_shape = (28, 28, 1)
-    num_classes = 10
-
-    def modeldef():
-        model = Sequential()
-        model.add(Conv2D(32, kernel_size=(3, 3),
-                        activation='relu',
-                        input_shape=input_shape))
-        model.add(Conv2D(64, (3, 3), activation='relu'))
-        model.add(MaxPooling2D(pool_size=(2, 2)))
-        model.add(Flatten())
-        model.add(Dense(128, activation='relu'))
-        model.add(Dense(num_classes, activation='softmax'))
-
-        model.compile(loss=keras.losses.categorical_crossentropy,
-                    optimizer=keras.optimizers.SGD(),
-                    metrics=['accuracy'])
-        return model
-
-    class HMC_model():
-        def __init__(self, ensemble_weights):
-            self.m = modeldef()
-            self.ws = ensemble_weights
-            self.ms = [modeldef() for _ in self.ws]
-            for model, wlist in zip(self.ms,self.ws):
-                for tensor, weight in zip(model.weights, wlist):
-                    K.set_value(tensor, weight)
-                    
-        def get_results(self,X):
-            mc_preds = mcmc.HMC_ensemble_predict(self.m, self.ws, X)
-            preds = np.mean(mc_preds, axis=0)
-            predictive_entropy = H(preds)
-            expected_entropy = np.mean(H(mc_preds), axis=0)
-            minfo = predictive_entropy - expected_entropy
-            return preds, predictive_entropy, minfo
-        
-        def predict(self,X):
-            mc_preds = mcmc.HMC_ensemble_predict(self.m, self.ws, X)
-            preds = np.mean(mc_preds, axis=0)
-            return preds
-
-        def __call__(self, X):
-            """get predictions on a symbolic tensor; this is a little inefficient in terms of space"""
-            return K.mean( K.stack([ model(X) for model in self.ms]), axis=0)
-                
-    #load Y's weights
-    with open('save/mnist_hmc_ensemble_run_1.pkl', 'rb') as pkl:
-        weights = pickle.load(pkl)
-    with open('save/mnist_hmc_ensemble_run.pkl', 'rb') as pkl:
-        weights += pickle.load(pkl)
-
-    hmc_model = HMC_model(weights)
-    return hmc_model, encoder, decoder
-
 
         
     
-    
-def get_models_3s_7s():
-    _, encoder, decoder = define_VAE()
-    encoder.load_weights('save/enc_weights_3s_7s.h5')
-    decoder.load_weights('save/dec_weights_3s_7s.h5')
-    model = define_cdropout_3s_7s()
-    model.load_weights('save/mnist_cdrop_3s_7s.h5')
-    mc_model = U.MCModel(model, model.input, n_mc=50)
-    #we have been using more mc samples elsewhere, but save time for now
-    return mc_model, encoder, decoder
 
 def get_models():
     _, encoder, decoder = define_VAE()
@@ -143,7 +69,7 @@ def get_model_ensemble(n_mc=10):
     decoder.load_weights('save/dec_weights.h5')
 
     models = []
-    for name in filter(lambda x: 'mnist_cdrop_cnn' in x, os.listdir('save')):
+    for name in filter(lambda x: 'mnist_cnn' in x, os.listdir('save')):
         print('loading model {}'.format(name))
         model = load_drop_model('save/' + name)
         models.append(model)
@@ -243,7 +169,7 @@ def make_interactive_plot(proj_x,
             pred,entropy,bald = model.get_results(dream)
             print("Predicted Class: {}, prob: {}".format(pred.argmax(axis=1), pred.max(axis=1)))
             print("Predictive Entropy: {}".format(entropy[0]))
-            print("BALD Score:         {}".format(bald[0]))
+            print("MI Score:         {}".format(bald[0]))
             proj.set_data(dream.squeeze())
             print(z1, z2)
             plt.draw()
@@ -324,30 +250,14 @@ def make_starred_plot(proj_x,
 
 if __name__ == '__main__':
 
-    #model, encoder, decoder = get_models_3s_7s()
-    
-    #x_train, y_train, x_test, y_test = mnist_to_3s_and_7s(U.get_mnist())
-    # model, encoder, decoder = get_models()
-    model, encoder, decoder = get_HMC_models()
+
+    model, encoder, decoder = get_models()
     #model, encoder, decoder = get_model_ensemble(n_mc=20)
     
     x_train, y_train, x_test, y_test = U.get_mnist()
 
-   #  model, encoder, decoder = get_ML_models()  
-   # model, encoder, decoder = get_ML_ensemble()
-   # _, encoder, decoder = define_VAE()
-   # encoder.load_weights('save/enc_weights.h5')
-   # decoder.load_weights('save/dec_weights.h5')
-
-   # model1 = load_drop_model('save/mnist_cdrop_cnn.h5')
-
-   # model2 = keras.models.load_model('save/mnist_cnn.h5')
-   # model, encoder, decoder = get_ML_no_drop_models()
-
-    
     
     proj_x_train = encoder.predict(x_train)
-   # model = EnsembleWrapper([model1, model2])
 
     zmin, zmax = -10,10
     n_grid = 40
@@ -373,5 +283,5 @@ if __name__ == '__main__':
               np.array([[-.98,2.3], [-.73,1.52], [5,4]])
     )
     print('done')              
-    #plt.savefig('overleaf-paper/figures/model_ensemble_bald.pdf')
+    plt.savefig('my-figure')
     plt.show()
