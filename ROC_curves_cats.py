@@ -404,6 +404,6 @@ if __name__ == '__main__':
             x_advs_plot,
             attack_spec,
             adv_save_num=adv_save_num,
-            fname='output/roc_curves_{}.h5',
+            fname='my_roc_curves_{}.h5',
             batch_size=args.batch_size,
             N_data=args.N_data)
