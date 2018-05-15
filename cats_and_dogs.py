@@ -85,6 +85,6 @@ if __name__ == '__main__':
 
         x_te = f['test']['X']
         y_te = f['test']['Y']
-        model.fit(x_tr, y_tr, epochs=40, validation_data=(x_te, y_te), shuffle='batch')
+        model.fit(x_tr, y_tr, epochs=15, validation_data=(x_te, y_te), shuffle='batch')
         name = U.gen_save_name(wname)
         model.save_weights(name)
