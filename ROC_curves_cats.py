@@ -359,7 +359,6 @@ if __name__ == '__main__':
         {
             "method": "bim",
             "eps": 5,
-            "eps_iter": 0.8,
             "clip_min": -103.939,
             "clip_max": 131.32,
             "ord": np.inf,
@@ -377,7 +376,6 @@ if __name__ == '__main__':
         {
             "method": "mim",
             "eps": 5,
-            "eps_iter": 0.8,
             "clip_min": -103.939,
             "clip_max": 131.32,
             "ord": np.inf,
