@@ -79,12 +79,7 @@ if __name__ == '__main__':
 
     model.compile(loss='categorical_crossentropy',
                   metrics=['accuracy'], optimizer='adam')
-    with h5py.File(H5PATH, 'r') as f:
-        x_tr = f['train']['X']
-        y_tr = f['train']['Y']
-
-        x_te = f['test']['X']
-        y_te = f['test']['Y']
-        model.fit(x_tr, y_tr, epochs=40, validation_data=(x_te, y_te), shuffle='batch')
-        name = U.gen_save_name(wname)
-        model.save_weights(name)
+    X_train, Y_train, X_test, Y_test = load_or_create_dataset()
+    model.fit(X_train, Y_train, epochs=15, validation_data=(X_test, Y_test), shuffle='batch')
+    name = U.gen_save_name(wname)
+    model.save_weights(name)
