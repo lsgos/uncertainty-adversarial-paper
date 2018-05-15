@@ -303,8 +303,8 @@ def run(x_real,
 if __name__ == '__main__':
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('--N_data', type=int, default=100, help="Number of examples \
-        of adverserial and non-adverserial examples to use.")
+    parser.add_argument('--N_data', type=int, default=200, help="Number of examples \
+        of adversarial and non-adversarial examples to use.")
     parser.add_argument('--N_mc', type=int, default=20, help="number of mc passes")
     parser.add_argument('--batch_size', type=int, default=5, help='Batch size to use')
 
